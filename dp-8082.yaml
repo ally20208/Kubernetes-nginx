@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-8082
+  labels:
+    app: nginx-8082
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-8082
+  template:
+    metadata:
+      labels:
+        app: nginx-8082
+    spec:
+      containers:
+      - name: nginx-8082
+        image: nginx
+        ports:
+        - containerPort: 8082
+        volumeMounts:
+        - name: nginx-conf-2
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: index-8082
+          mountPath: /etc/nginx/html/
+        resources:
+          limits:
+            cpu: 500m
+            memory: "128Mi"
+          requests:
+            cpu: 200m
+            memory: "64Mi"
+        readinessProbe:
+          tcpSocket:
+            port: 8082
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 8082
+          initialDelaySeconds: 15
+          periodSeconds: 20
+      volumes:
+      - name: nginx-conf-2
+        configMap:
+          name: nginx-conf-2
+          items:
+          - key: nginx.conf
+            path: nginx.conf
+      - name: index-8082
+        configMap:
+          name: index-8082
